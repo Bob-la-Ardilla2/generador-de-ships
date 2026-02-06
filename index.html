@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ship Generator 💜</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px 10px;
+        }
+
+        /* Efectos de fondo animados - simplificado para mejor rendimiento */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
+            animation: rotate 30s linear infinite;
+            will-change: transform;
+        }
+
+        @media (max-width: 768px) {
+            body::before {
+                animation: none; /* Desactivar en móviles para mejor rendimiento */
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .container {
+            background: rgba(20, 20, 40, 0.8);
+            padding: 40px 30px;
+            border-radius: 25px;
+            box-shadow: 
+                0 0 60px rgba(138, 43, 226, 0.4),
+                0 0 100px rgba(255, 0, 128, 0.2),
+                inset 0 0 30px rgba(0, 100, 255, 0.1);
+            border: 2px solid rgba(138, 43, 226, 0.3);
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        /* Tablets y pantallas medianas */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 25px;
+                max-width: 450px;
+            }
+        }
+
+        /* Móviles grandes */
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px 20px;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+        }
+
+        /* Móviles pequeños */
+        @media (max-width: 400px) {
+            .container {
+                padding: 20px 15px;
+                border-radius: 15px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff0080, #8a2be2, #0064ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+            line-height: 1.3;
+            will-change: filter;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                animation: none; /* Desactivar animación en móviles */
+                filter: drop-shadow(0 0 10px rgba(138, 43, 226, 0.5));
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 25px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 20px;
+            }
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 10px rgba(138, 43, 226, 0.6));
+            }
+            to {
+                filter: drop-shadow(0 0 20px rgba(255, 0, 128, 0.8));
+            }
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 1em;
+            background: rgba(10, 10, 30, 0.6);
+            border: 2px solid;
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            .input-wrapper input {
+                padding: 10px 12px;
+                font-size: 0.95em;
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .input-wrapper input {
+                padding: 9px 10px;
+                font-size: 0.9em;
+            }
+        }
+
+        .input-wrapper:nth-child(1) input {
+            border-color: #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .input-wrapper:nth-child(1) input:focus {
+            border-color: #a64dff;
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
+        }
+
+        .input-wrapper:nth-child(3) input {
+            border-color: #ff0080;
+            box-shadow: 0 0 15px rgba(255, 0, 128, 0.3);
+        }
+
+        .input-wrapper:nth-child(3) input:focus {
+            border-color: #ff3399;
+            box-shadow: 0 0 25px rgba(255, 0, 128, 0.6);
+        }
+
+        .plus-sign {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0064ff;
+            text-shadow: 0 0 10px rgba(0, 100, 255, 0.6);
+            animation: pulse 2s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @media (max-width: 768px) {
+            .plus-sign {
+                animation: none; /* Desactivar en móviles */
+                text-shadow: 0 0 8px rgba(0, 100, 255, 0.6);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .plus-sign {
+                font-size: 1.3em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .plus-sign {
+                font-size: 1.2em;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #8a2be2, #ff0080, #0064ff);
+            background-size: 200% 200%;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: gradient 4s ease infinite;
+            will-change: background-position;
+        }
+
+        @media (max-width: 768px) {
+            button {
+                animation: none; /* Desactivar animación en móviles */
+                background: linear-gradient(45deg, #8a2be2, #ff0080);
+            }
+        }
+
+        @media (max-width: 600px) {
+            button {
+                padding: 12px;
+                font-size: 1em;
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            button {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.8);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #resultado {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(138, 43, 226, 0.1);
+            border: 2px solid;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-image: linear-gradient(45deg, #8a2be2, #ff0080, #0064ff) 1;
+            box-shadow: inset 0 0 15px rgba(138, 43, 226, 0.15);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            will-change: opacity, transform;
+        }
+
+        @media (max-width: 768px) {
+            #resultado {
+                box-shadow: inset 0 0 10px rgba(138, 43, 226, 0.1); /* Simplificado */
+            }
+        }
+
+        @media (max-width: 600px) {
+            #resultado {
+                font-size: 1em;
+                padding: 15px;
+                min-height: 60px;
+                border-radius: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            #resultado {
+                font-size: 0.95em;
+                padding: 12px;
+                min-height: 55px;
+            }
+        }
+
+        #resultado.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .ship-name {
+            background: linear-gradient(45deg, #ff0080, #8a2be2, #0064ff, #ff0080);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s ease-in-out infinite;
+            font-size: 1.5em;
+            will-change: background-position;
+        }
+
+        @media (max-width: 768px) {
+            .ship-name {
+                animation-duration: 5s; /* Ralentizar en móviles */
+            }
+        }
+
+        @media (max-width: 600px) {
+            .ship-name {
+                font-size: 1.3em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .ship-name {
+                font-size: 1.2em;
+            }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hearts {
+            position: absolute;
+            font-size: 1.2em;
+            animation: float 3s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @media (max-width: 768px) {
+            .hearts {
+                animation: none; /* Desactivar en móviles */
+            }
+        }
+
+        .hearts.left {
+            left: -25px;
+        }
+
+        .hearts.right {
+            right: -25px;
+        }
+
+        @media (max-width: 600px) {
+            .hearts {
+                font-size: 1em;
+            }
+            .hearts.left {
+                left: -20px;
+            }
+            .hearts.right {
+                right: -20px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .hearts {
+                font-size: 0.9em;
+            }
+            .hearts.left {
+                left: -18px;
+            }
+            .hearts.right {
+                right: -18px;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .creditos-arriba {
+            text-align: center;
+            color: rgba(138, 43, 226, 0.8);
+            font-size: 0.85em;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .creditos-arriba {
+                font-size: 0.8em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .creditos-arriba {
+                font-size: 0.75em;
+            }
+        }
+
+        .copyright {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8em;
+            margin-top: 20px;
+            margin-bottom: 0;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 600px) {
+            .copyright {
+                font-size: 0.75em;
+                margin-top: 15px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .copyright {
+                font-size: 0.7em;
+            }
+        }
+
+        /* Overlay de fondo */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            will-change: opacity;
+        }
+
+        @media (max-width: 768px) {
+            .overlay {
+                backdrop-filter: blur(3px); /* Reducir blur en móviles */
+            }
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Modal estilo de la imagen */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: linear-gradient(135deg, #2d1b4e 0%, #1a0f2e 100%);
+            border: 3px solid #7b2cbf;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 40px rgba(123, 44, 191, 0.5),
+                0 15px 50px rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            min-width: 350px;
+            max-width: 90%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            padding: 25px 20px 20px;
+            will-change: opacity, transform;
+        }
+
+        @media (max-width: 768px) {
+            .modal {
+                box-shadow: 
+                    0 0 30px rgba(123, 44, 191, 0.4),
+                    0 10px 40px rgba(0, 0, 0, 0.6); /* Simplificado */
+            }
+        }
+
+        .modal.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: all;
+        }
+
+        .modal-body {
+            padding: 0 0 20px 0;
+            text-align: center;
+        }
+
+        .modal-pregunta {
+            color: white;
+            font-size: 1.1em;
+            margin: 0;
+            line-height: 1.4;
+            font-weight: 500;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-footer {
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            padding: 12px 35px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            min-width: 110px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            will-change: transform;
+        }
+
+        .modal-btn-si {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-btn-si:hover {
+            background: linear-gradient(135deg, #0aff0a, #00dd00);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-si:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 255, 0, 0.3);
+        }
+
+        .modal-btn-no {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-btn-no:hover {
+            background: linear-gradient(135deg, #ff1a1a, #dd0000);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-no:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+        }
+
+        .modal-recomendacion {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .modal-btn-recomendado {
+            background: transparent;
+            border: 2px solid rgba(138, 43, 226, 0.6);
+            color: #a64dff;
+            padding: 8px 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+            text-shadow: 0 0 5px rgba(138, 43, 226, 0.3);
+            letter-spacing: 0.5px;
+            will-change: transform;
+        }
+
+        .modal-btn-recomendado:hover {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+            color: #c77dff;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .modal-btn-recomendado:active {
+            transform: translateY(0);
+            box-shadow: 0 0 8px rgba(138, 43, 226, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modal {
+                min-width: 320px;
+                max-width: 85%;
+                padding: 22px 18px 18px;
+                border-radius: 18px;
+            }
+
+            .modal-pregunta {
+                font-size: 1em;
+            }
+
+            .modal-btn {
+                padding: 11px 30px;
+                font-size: 0.95em;
+                min-width: 100px;
+            }
+
+            .modal-recomendacion {
+                margin-top: 12px;
+            }
+
+            .modal-btn-recomendado {
+                font-size: 0.8em;
+                padding: 7px 18px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .modal {
+                min-width: 280px;
+                max-width: 90%;
+                padding: 20px 15px 16px;
+                border-radius: 15px;
+                border: 2px solid #7b2cbf;
+            }
+
+            .modal-body {
+                padding: 0 0 18px 0;
+            }
+
+            .modal-pregunta {
+                font-size: 0.95em;
+                line-height: 1.3;
+            }
+            
+            .modal-footer {
+                gap: 12px;
+            }
+            
+            .modal-btn {
+                padding: 10px 25px;
+                font-size: 0.9em;
+                min-width: 90px;
+                border-radius: 10px;
+            }
+
+            .modal-recomendacion {
+                margin-top: 10px;
+            }
+
+            .modal-btn-recomendado {
+                font-size: 0.75em;
+                padding: 6px 16px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .modal {
+                min-width: 260px;
+                max-width: 92%;
+                padding: 18px 12px 14px;
+            }
+
+            .modal-body {
+                padding: 0 0 15px 0;
+            }
+
+            .modal-pregunta {
+                font-size: 0.88em;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-btn {
+                width: 100%;
+                min-width: auto;
+                padding: 10px 20px;
+                font-size: 0.85em;
+            }
+
+            .modal-recomendacion {
+                margin-top: 8px;
+            }
+
+            .modal-btn-recomendado {
+                font-size: 0.72em;
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pon 2 nombres para ship! 💕</h1>
+        
+        <div class="input-group">
+            <div class="input-wrapper">
+                <input type="text" id="nombre1" placeholder="Nombre 1" maxlength="20">
+            </div>
+            
+            <div class="input-wrapper" style="justify-content: center; margin: 20px 0;">
+                <span class="plus-sign">+</span>
+            </div>
+            
+            <div class="input-wrapper">
+                <input type="text" id="nombre2" placeholder="Nombre 2" maxlength="20">
+            </div>
+        </div>
+
+        <button onclick="generarShip()">✨ Crear Ship ✨</button>
+
+        <p class="creditos-arriba">Página Web creada por Andrés León</p>
+
+        <div id="resultado">
+            <span class="hearts left">💜</span>
+            <span id="shipName">¡Tu ship aparecerá aquí!</span>
+            <span class="hearts right">💙</span>
+        </div>
+
+        <p class="copyright">© Todos los derechos reservados</p>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="overlay" class="overlay"></div>
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-body">
+            <p class="modal-pregunta">¿Estás seguro/a de utilizar este nombre?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-si" onclick="confirmarSi()">Sí</button>
+            <button class="modal-btn modal-btn-no" onclick="confirmarNo()">No</button>
+        </div>
+        <div class="modal-recomendacion">
+            <button class="modal-btn-recomendado" onclick="usarRecomendado()">Usar opción recomendada</button>
+        </div>
+    </div>
+
+    <script>
+        let ultimosNombres = { nombre1: '', nombre2: '' };
+        let opcionesGeneradas = [];
+        let indiceActual = 0;
+        let nombresPendientes = null;
+        let campoConAndres = null;
+
+        function generarShip() {
+            const nombre1 = document.getElementById('nombre1').value.trim().toLowerCase();
+            const nombre2 = document.getElementById('nombre2').value.trim().toLowerCase();
+            const resultado = document.getElementById('resultado');
+            const shipName = document.getElementById('shipName');
+
+            if (nombre1 === '' || nombre2 === '') {
+                shipName.innerHTML = '¡Necesitas dos nombres! 💔';
+                resultado.classList.add('show');
+                return;
+            }
+
+            // Verificar si alguno de los nombres es "Andrés" o "Andres"
+            const esAndres1 = nombre1 === 'andrés' || nombre1 === 'andres';
+            const esAndres2 = nombre2 === 'andrés' || nombre2 === 'andres';
+
+            if ((esAndres1 || esAndres2) && !nombresPendientes) {
+                // Guardar los nombres pendientes y qué campo tiene "Andrés"
+                nombresPendientes = { nombre1, nombre2 };
+                campoConAndres = esAndres1 ? 'nombre1' : 'nombre2';
+                mostrarConfirmacion();
+                return;
+            }
+
+            // Si hay confirmación, usar los nombres pendientes
+            const n1 = nombresPendientes ? nombresPendientes.nombre1 : nombre1;
+            const n2 = nombresPendientes ? nombresPendientes.nombre2 : nombre2;
+            nombresPendientes = null;
+            campoConAndres = null;
+
+            // Si los nombres cambiaron, generar nuevas opciones
+            if (n1 !== ultimosNombres.nombre1 || n2 !== ultimosNombres.nombre2) {
+                ultimosNombres = { nombre1: n1, nombre2: n2 };
+                opcionesGeneradas = generarTodasLasOpciones(n1, n2);
+                indiceActual = 0;
+            } else {
+                // Si son los mismos nombres, rotar a la siguiente opción
+                indiceActual = (indiceActual + 1) % opcionesGeneradas.length;
+            }
+
+            // Ocultar confirmación si está visible
+            ocultarConfirmacion();
+
+            // Mostrar la opción actual
+            const shipNombre = opcionesGeneradas[indiceActual];
+            shipName.innerHTML = `<span class="ship-name">${shipNombre}</span>`;
+            resultado.classList.add('show');
+        }
+
+        function mostrarConfirmacion() {
+            const modal = document.getElementById('modalConfirmacion');
+            const overlay = document.getElementById('overlay');
+            modal.classList.add('show');
+            overlay.classList.add('show');
+        }
+
+        function ocultarConfirmacion() {
+            const modal = document.getElementById('modalConfirmacion');
+            const overlay = document.getElementById('overlay');
+            modal.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        function confirmarSi() {
+            generarShip();
+        }
+
+        function confirmarNo() {
+            // Limpiar el campo que contenía "Andrés"
+            if (campoConAndres) {
+                document.getElementById(campoConAndres).value = '';
+            }
+            nombresPendientes = null;
+            campoConAndres = null;
+            ocultarConfirmacion();
+            document.getElementById('resultado').classList.remove('show');
+        }
+
+        function usarRecomendado() {
+            // Llenar los campos con los nombres recomendados
+            document.getElementById('nombre1').value = 'Daryela';
+            document.getElementById('nombre2').value = 'Castro';
+            
+            // Limpiar las variables pendientes
+            nombresPendientes = null;
+            campoConAndres = null;
+            
+            // Ocultar el modal
+            ocultarConfirmacion();
+            
+            // Generar el ship automáticamente con los nombres recomendados
+            setTimeout(() => {
+                generarShip();
+            }, 300);
+        }
+
+        function generarTodasLasOpciones(nombre1, nombre2) {
+            const vocales = ['a', 'e', 'i', 'o', 'u'];
+            const opciones = new Set(); // Usar Set para evitar duplicados
+            
+            // Función para encontrar cortes en vocales
+            function encontrarCortesVocales(nombre) {
+                const cortes = [];
+                for (let i = 1; i < nombre.length; i++) {
+                    if (vocales.includes(nombre[i - 1]) || vocales.includes(nombre[i])) {
+                        cortes.push(i);
+                    }
+                }
+                return cortes.length > 0 ? cortes : [Math.ceil(nombre.length / 2)];
+            }
+
+            const cortes1 = encontrarCortesVocales(nombre1);
+            const cortes2 = encontrarCortesVocales(nombre2);
+
+            // Generar combinaciones con diferentes cortes
+            cortes1.forEach(c1 => {
+                cortes2.forEach(c2 => {
+                    // Nombre1 + Nombre2
+                    let ship = nombre1.slice(0, c1) + nombre2.slice(c2);
+                    ship = limpiarNombre(ship);
+                    if (ship.length >= 4 && ship.length <= 12) {
+                        opciones.add(capitalizarNombre(ship));
+                    }
+
+                    // Nombre2 + Nombre1
+                    ship = nombre2.slice(0, c2) + nombre1.slice(c1);
+                    ship = limpiarNombre(ship);
+                    if (ship.length >= 4 && ship.length <= 12) {
+                        opciones.add(capitalizarNombre(ship));
+                    }
+                });
+            });
+
+            // Opciones adicionales creativas
+            // Primeras 2-3 letras + últimas 2-3 letras
+            const inicio1 = nombre1.slice(0, Math.min(3, nombre1.length));
+            const fin2 = nombre2.slice(-Math.min(3, nombre2.length));
+            opciones.add(capitalizarNombre(limpiarNombre(inicio1 + fin2)));
+
+            const inicio2 = nombre2.slice(0, Math.min(3, nombre2.length));
+            const fin1 = nombre1.slice(-Math.min(3, nombre1.length));
+            opciones.add(capitalizarNombre(limpiarNombre(inicio2 + fin1)));
+
+            // Primeras sílabas
+            const silaba1 = nombre1.slice(0, Math.min(nombre1.length, 3));
+            const silaba2 = nombre2.slice(0, Math.min(nombre2.length, 3));
+            opciones.add(capitalizarNombre(limpiarNombre(silaba1 + silaba2)));
+
+            // Convertir Set a array y ordenar por "calidad"
+            const arrayOpciones = Array.from(opciones);
+            
+            // Filtrar y ordenar por calidad
+            return arrayOpciones
+                .filter(op => op.length >= 4) // Mínimo 4 letras
+                .sort((a, b) => {
+                    // Preferir nombres de longitud media
+                    const puntoIdeal = 7;
+                    const difA = Math.abs(a.length - puntoIdeal);
+                    const difB = Math.abs(b.length - puntoIdeal);
+                    
+                    if (difA !== difB) return difA - difB;
+                    
+                    // Si tienen longitud similar, preferir más vocales (suenan mejor)
+                    const vocalesA = (a.match(/[aeiou]/gi) || []).length;
+                    const vocalesB = (b.match(/[aeiou]/gi) || []).length;
+                    return vocalesB - vocalesA;
+                })
+                .slice(0, 8); // Máximo 8 opciones para rotar
+        }
+
+        function limpiarNombre(nombre) {
+            // Eliminar consonantes triplicadas
+            nombre = nombre.replace(/([bcdfghjklmnpqrstvwxyz])\1{2,}/gi, '$1$1');
+            // Eliminar vocales duplicadas
+            nombre = nombre.replace(/([aeiou])\1+/gi, '$1');
+            // Eliminar combinaciones raras de consonantes
+            nombre = nombre.replace(/([bcdfghjklmnpqrstvwxyz]){4,}/gi, (match) => match.slice(0, 2));
+            return nombre;
+        }
+
+        function capitalizarNombre(nombre) {
+            return nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
+        }
+
+        // Permitir generar ship con Enter
+        document.getElementById('nombre1').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') generarShip();
+        });
+
+        document.getElementById('nombre2').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') generarShip();
+        });
+    </script>
+</body>
+</html>
